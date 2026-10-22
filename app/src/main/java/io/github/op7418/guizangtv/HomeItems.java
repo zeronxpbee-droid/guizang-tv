@@ -36,11 +36,13 @@ final class HomeItems {
     }
     String name(String id) { return names.getOrDefault(id, context.getSharedPreferences("home-items",0).getString("name:"+id,id)); }
     private static String defaultLabel(String id) {
-        if ("hdmi:2".equals(id)) return "PlayStation 5";
-        if ("hdmi:1".equals(id)) return "Apple TV";
+        if (!DeviceProfile.MODEL_MFTP0.equals(android.os.Build.MODEL)) {
+            if ("hdmi:2".equals(id)) return "PlayStation 5";
+            if ("hdmi:1".equals(id)) return "Apple TV";
+        }
         return DeviceProfile.label(android.os.Build.MODEL, id, id);
     }
-    static boolean validId(String id) { return id.equals("hdmi:1") || id.equals("hdmi:2") || id.matches("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_]+)+"); }
+    static boolean validId(String id) { return id.matches("hdmi:[1-4]") || id.matches("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_]+)+"); }
     boolean save(List<String> next) {
         if (next.isEmpty() || next.size()>9 || new HashSet<>(next).size()!=next.size()) return false;
         for(String id : next) if(!validId(id)) return false;

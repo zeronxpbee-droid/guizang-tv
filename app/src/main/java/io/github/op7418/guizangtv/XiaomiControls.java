@@ -8,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 
-/** Local profile verified on MiTV-MTSU0, OS3.0.119.0.UTSMATV. */
+/** Firmware-specific controls gated by real-device profiles. */
 final class XiaomiControls {
     private static final String MEDIA_EXPLORER_ACTION =
             "duokan.mediaexplorer.intent.action.BROWSE_ALBUM";
@@ -19,9 +19,10 @@ final class XiaomiControls {
         return DeviceProfile.supportsVerifiedXiaomiControls(Build.MODEL);
     }
 
-    /** Observed on this firmware: source 23 = HDMI 1, source 24 = HDMI 2. */
+    /** Verified profiles use source 23/24/25 for HDMI 1/2/3 as available. */
     static boolean openHdmi(Context context, int port) {
-        if (!enabled() || port < 1 || port > 2) return false;
+        int input = DeviceProfile.hdmiInput(Build.MODEL, port);
+        if (input < 0) return false;
         ComponentName target = new ComponentName("com.xiaomi.mitv.tvplayer",
                 "com.xiaomi.mitv.tvplayer.ExternalSourceActivity");
         try {
@@ -31,7 +32,7 @@ final class XiaomiControls {
                     && context.checkSelfPermission(info.permission) != PackageManager.PERMISSION_GRANTED)
                 return false;
             context.startActivity(new Intent("com.xiaomi.mitv.tvplayer.EXTSRC_PLAY")
-                    .setComponent(target).putExtra("input", 22 + port)
+                    .setComponent(target).putExtra("input", input)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             return true;
         } catch (PackageManager.NameNotFoundException | RuntimeException unavailable) {
@@ -65,8 +66,14 @@ final class XiaomiControls {
             if (info.permission != null
                     && context.checkSelfPermission(info.permission) != PackageManager.PERMISSION_GRANTED)
                 return false;
-            context.sendBroadcast(new Intent("com.xiaomi.mitv.settings.INPUTSOURCE_POPUP")
-                    .setComponent(receiver));
+            Intent popup = new Intent("com.xiaomi.mitv.settings.INPUTSOURCE_POPUP");
+            if (DeviceProfile.usesPackagedInputPopup(Build.MODEL)) {
+                popup.setPackage("com.xiaomi.mitv.settings")
+                        .addFlags(Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+            } else {
+                popup.setComponent(receiver);
+            }
+            context.sendBroadcast(popup);
             return true;
         } catch (PackageManager.NameNotFoundException | SecurityException unavailable) {
             return false;

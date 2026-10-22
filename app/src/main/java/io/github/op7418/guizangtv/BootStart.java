@@ -61,7 +61,7 @@ public final class BootStart {
     static void show(Activity a) {
         if (!XiaomiControls.enabled()) {
             new AlertDialog.Builder(a).setTitle("开机自动进入（实验）")
-                    .setMessage("目前仅适配 MiTV-MTSU0。其他机型请先使用普通应用入口。")
+                    .setMessage("目前仅适配 MiTV-MTSU0 和 MiTV-MFTP0。其他机型请先使用普通应用入口。")
                     .setNegativeButton("返回", null).show();
             return;
         }

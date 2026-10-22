@@ -14,14 +14,29 @@ final class DeviceProfile {
             "hdmi:2", "hdmi:1", BILIBILI, SMART_SHARE, LEGACY_GALLERY, STOCK_HOME
     };
     private static final String[] MFTP0_DEFAULTS = {
-            BILIBILI, SMART_SHARE, MEDIA_EXPLORER, STOCK_HOME
+            "hdmi:1", "hdmi:2", "hdmi:3", BILIBILI, SMART_SHARE, MEDIA_EXPLORER, STOCK_HOME
     };
 
     private DeviceProfile() { }
 
-    /** HDMI, input-popup and boot behavior is verified only on this model. */
+    /** Xiaomi-specific controls are enabled only for firmware profiles verified on real TVs. */
     static boolean supportsVerifiedXiaomiControls(String model) {
-        return MODEL_MTSU0.equals(model);
+        return MODEL_MTSU0.equals(model) || MODEL_MFTP0.equals(model);
+    }
+
+    static int maxHdmiPort(String model) {
+        if (MODEL_MFTP0.equals(model)) return 3;
+        if (MODEL_MTSU0.equals(model)) return 2;
+        return 0;
+    }
+
+    static int hdmiInput(String model, int port) {
+        return port >= 1 && port <= maxHdmiPort(model) ? 22 + port : -1;
+    }
+
+    /** This Android 9 firmware ignores an explicit receiver but accepts a package-scoped broadcast. */
+    static boolean usesPackagedInputPopup(String model) {
+        return MODEL_MFTP0.equals(model);
     }
 
     static boolean usesMediaExplorerGallery(String model) {
@@ -33,6 +48,11 @@ final class DeviceProfile {
     }
 
     static String label(String model, String id, String original) {
+        if (MODEL_MFTP0.equals(model)) {
+            if ("hdmi:1".equals(id)) return "Fire TV";
+            if ("hdmi:2".equals(id)) return "HDMI 2";
+            if ("hdmi:3".equals(id)) return "HDMI 3";
+        }
         switch (id) {
             case BILIBILI: return "哔哩哔哩";
             case SMART_SHARE: return "小米投屏";
@@ -44,8 +64,7 @@ final class DeviceProfile {
     }
 
     static String stockHomeActivity(String model) {
-        if (MODEL_MFTP0.equals(model)) return "com.mitv.tvhome.MainActivityUserMode";
-        if (MODEL_MTSU0.equals(model)) return "com.mitv.tvhome.MainActivity";
+        if (supportsVerifiedXiaomiControls(model)) return "com.mitv.tvhome.MainActivity";
         return null;
     }
 }

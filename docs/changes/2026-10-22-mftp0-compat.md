@@ -19,10 +19,10 @@
 
 ## 验证
 
-GitHub Actions 运行 `39749608158` 对提交 `45da73ecec645743812890a2d46328f0e2c98882` 完成
+GitHub Actions 最终运行 `39750226976` 对提交 `1ea8932154c569a0f9c0d6351e472546b3cc2059` 完成
 Debug APK 构建、Java 单元测试、Android lint 和 Python 壁纸测试，全部通过。下载的 1.9 MB 产物位于
-`artifacts/run-39749608158/app-debug.apk`，SHA-256 为
-`82ff1b32c0b3da12c8eee35c63e13779be2136a361106a928317d1c211000697`，ZIP 完整性检查通过。
+`artifacts/run-39750226976/app-debug.apk`，SHA-256 为
+`027c005fe5357ee53cc0d81a7aee3edc5f5bb27cd8f7f088d02a4140e6737d16`，ZIP 完整性检查通过。
 
 本机系统 Python 因缺少 Pillow，在收集壁纸测试时失败；CI 使用隔离虚拟环境安装项目声明的 Pillow 后
 通过同一测试。该结果不冒充本机依赖已完备。电视端功能仍需要用户另行授权安装后的分阶段实测。

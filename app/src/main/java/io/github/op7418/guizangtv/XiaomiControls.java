@@ -10,6 +10,8 @@ import android.provider.Settings;
 
 /** Firmware-specific controls gated by real-device profiles. */
 final class XiaomiControls {
+    // Framework flag used by `am broadcast --receiver-include-background`; hidden from SDK stubs.
+    private static final int FLAG_RECEIVER_INCLUDE_BACKGROUND = 0x01000000;
     private static final String MEDIA_EXPLORER_ACTION =
             "duokan.mediaexplorer.intent.action.BROWSE_ALBUM";
 
@@ -69,7 +71,7 @@ final class XiaomiControls {
             Intent popup = new Intent("com.xiaomi.mitv.settings.INPUTSOURCE_POPUP");
             if (DeviceProfile.usesPackagedInputPopup(Build.MODEL)) {
                 popup.setPackage("com.xiaomi.mitv.settings")
-                        .addFlags(Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+                        .addFlags(FLAG_RECEIVER_INCLUDE_BACKGROUND);
             } else {
                 popup.setComponent(receiver);
             }

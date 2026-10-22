@@ -16,7 +16,7 @@
 TV Input 状态和 CEC 活动路由均指向端口 1。
 
 此固件忽略显式指定 `SettingsBroadcastReceiver` 的信号源广播，但接受限定到
-`com.xiaomi.mitv.settings` 包、包含后台接收标志的隐式广播。后者已实际显示“切换信号源”系统面板。
+`com.xiaomi.mitv.settings` 包的隐式广播。后者已实际显示“切换信号源”系统面板。
 小米原桌面真实 Activity 受 `HOME_STATE` 签名权限保护；公开 `com.mitv.tvhome.MainActivity` 别名可用，
 因此适配改回公开别名，不直接启动受保护 Activity。
 
@@ -32,10 +32,13 @@ TV Input 状态和 CEC 活动路由均指向端口 1。
 代码构建、安装后的应用路径、Codex 两轮文字对话和完整重启仍待后续步骤验证。本记录不会把系统组件
 直调结果冒充适配应用已经通过，也不会把未接设备端口的“无信号”状态描述为视频/音频通过。
 
-首次 CI 运行 `39755127080` 在 Java 编译阶段失败：SDK stub 不公开系统使用的
-`FLAG_RECEIVER_INCLUDE_BACKGROUND` 符号。实机已经证明该 flag 的行为，修复改为具名本地常量
-`0x01000000`；失败构建没有产出或安装 APK，后续必须重新完整构建验证。
+首次 CI 运行 `39755127080` 在 Java 编译阶段失败：SDK stub 不公开 shell 测试使用的
+`FLAG_RECEIVER_INCLUDE_BACKGROUND` 符号。失败构建没有产出或安装 APK。
 
 第二次 CI 运行 `39755562286` 已编译并打包，但 25 项 Java 测试中有 1 项失败：数组防篡改测试仍把
 哔哩哔哩当作首项，没有随设备默认入口改为 HDMI 1。测试期望已修正为新配置；该次运行在单元测试失败后
 未执行 lint 和 Python 测试，仍不能作为通过结果。
+
+第三次 CI 运行 `39755996810` 通过编译和全部 25 项 Java 测试，随后 Android lint 把具名数值 flag
+判定为 WrongConstant。重新实机测试确认包限定广播不需要这个隐藏 flag 也能显示系统面板，因此删除 flag，
+不使用 lint 抑制绕过问题。该次运行在 lint 失败后未执行 Python 测试。

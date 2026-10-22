@@ -8,15 +8,13 @@ import java.util.*;
 
 /** Stable app/source identities; removing an entry never uninstalls an app. */
 final class HomeItems {
-    static final String[] DEFAULTS = {"hdmi:2", "hdmi:1", "com.xiaodianshi.tv.yst",
-            "com.xiaomi.mitv.smartshare", "com.mitv.gallery", "com.mitv.tvhome"};
     final Context context;
     final LinkedHashMap<String,String> names = new LinkedHashMap<>();
     final List<String> order = new ArrayList<>();
     HomeItems(Context c) {
         context = c;
-        String[] labels = {"PlayStation 5", "Apple TV", "哔哩哔哩", "小米投屏", "相册", "小米原桌面"};
-        for (int i=0;i<DEFAULTS.length;i++) names.put(DEFAULTS[i], labels[i]);
+        String[] defaults = DeviceProfile.defaultItems(android.os.Build.MODEL);
+        for (String id : defaults) names.put(id, defaultLabel(id));
         discover();
         try {
             JSONArray data = new JSONArray(c.getSharedPreferences("home-items",0).getString("order","[]"));
@@ -25,7 +23,7 @@ final class HomeItems {
                 if (validId(id) && !order.contains(id)) order.add(id);
             }
         } catch (Exception ignored) { order.clear(); }
-        if (order.isEmpty()) order.addAll(Arrays.asList(DEFAULTS));
+        if (order.isEmpty()) order.addAll(Arrays.asList(defaults));
     }
     void discover() {
         for (String category : new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER}) {
@@ -37,6 +35,11 @@ final class HomeItems {
         }
     }
     String name(String id) { return names.getOrDefault(id, context.getSharedPreferences("home-items",0).getString("name:"+id,id)); }
+    private static String defaultLabel(String id) {
+        if ("hdmi:2".equals(id)) return "PlayStation 5";
+        if ("hdmi:1".equals(id)) return "Apple TV";
+        return DeviceProfile.label(android.os.Build.MODEL, id, id);
+    }
     static boolean validId(String id) { return id.equals("hdmi:1") || id.equals("hdmi:2") || id.matches("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_]+)+"); }
     boolean save(List<String> next) {
         if (next.isEmpty() || next.size()>9 || new HashSet<>(next).size()!=next.size()) return false;

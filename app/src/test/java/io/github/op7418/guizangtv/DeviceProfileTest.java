@@ -43,7 +43,7 @@ public class DeviceProfileTest {
     @Test public void returnedDefaultsCannotMutateProfile() {
         String[] changed = DeviceProfile.defaultItems(DeviceProfile.MODEL_MFTP0);
         changed[0] = "changed";
-        assertEquals(DeviceProfile.BILIBILI,
+        assertEquals("hdmi:1",
                 DeviceProfile.defaultItems(DeviceProfile.MODEL_MFTP0)[0]);
     }
 }

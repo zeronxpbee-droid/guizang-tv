@@ -1,6 +1,11 @@
 .gradle/
 **/build/
 local.properties
+/gradle.properties
+keystore.properties
+signing.properties
+release.properties
+secrets.properties
 .idea/
 .DS_Store
 __pycache__/
@@ -9,13 +14,64 @@ __pycache__/
 *.pyc
 *.apk
 *.aab
+
+# Real secrets must live outside this repository, for example under
+# ~/LocalSecrets/MITV-UI/. Only non-sensitive *.example templates may be kept.
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.env
+*.env.*
+!*.env.example
+!*.env.*.example
+.envrc
+.direnv/
+secrets/
+.secrets/
+private/
+.private/
+*.token
+*.secret
+*.credentials
+credentials*.json
+client_secret*.json
+service-account*.json
+google-services.json
+
+# Android signing keys, private keys, certificates and exported key stores.
 *.jks
 *.keystore
 *.pem
 *.key
-.env
-.env.*
+*.p12
+*.pfx
+*.pkcs12
+*.der
+*.crt
+*.cer
+*.csr
+
+# ADB and SSH authentication material must never enter the repository.
+adbkey
+adbkey.pub
+*.adbkey
+id_rsa
+id_rsa.pub
+id_dsa
+id_dsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+
+# Raw diagnostics can contain local addresses, tokens and account data.
 *.log
+*.trace
+*.dump
+adb*.log
+logcat*.txt
+bugreport*.zip
 # Personal media are local build inputs, never public source.
 app/src/main/assets/wallpapers/*
 !app/src/main/assets/wallpapers/catalog.json
@@ -25,5 +81,8 @@ app/src/main/assets/wallpapers/*
 !app/src/main/assets/wallpapers/bundled/
 
 # Companion pairing material must stay outside source control.
-tv-pairing.txt
+tv-pairing*.txt
 companion-state/
+.guizang-tv/
+companion-home/
+companion-private/

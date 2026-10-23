@@ -24,6 +24,11 @@ final class DeviceProfile {
         return MODEL_MTSU0.equals(model) || MODEL_MFTP0.equals(model);
     }
 
+    /** Only MFTP0 has shown the stock launcher invoking INFO again after standby wake. */
+    static boolean supportsStandbyWake(String model) {
+        return MODEL_MFTP0.equals(model);
+    }
+
     static int maxHdmiPort(String model) {
         if (MODEL_MFTP0.equals(model)) return 3;
         if (MODEL_MTSU0.equals(model)) return 2;

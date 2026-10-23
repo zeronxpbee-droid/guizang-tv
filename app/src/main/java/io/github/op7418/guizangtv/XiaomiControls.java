@@ -19,6 +19,10 @@ final class XiaomiControls {
         return DeviceProfile.supportsVerifiedXiaomiControls(Build.MODEL);
     }
 
+    static boolean standbyWakeSupported() {
+        return DeviceProfile.supportsStandbyWake(Build.MODEL);
+    }
+
     /** Verified profiles use source 23/24/25 for HDMI 1/2/3 as available. */
     static boolean openHdmi(Context context, int port) {
         int input = DeviceProfile.hdmiInput(Build.MODEL, port);

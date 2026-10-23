@@ -46,3 +46,11 @@
 - This MFTP0 firmware consumed the visible `start_3rd_app` value back to an empty string after the successful full-boot launch, while retaining an internal cached invocation path. The original visible setting is consequently restored, and the enabled app guard remains necessary to reject repeated same-boot calls safely.
 - Home key restoration, original Xiaomi packages and system Home remained intact. No default-Home change, package disable, data clear, uninstall, public companion exposure, Release publication or PR merge occurred.
 - Still unverified: HDMI audio/video quality and latency on every physical port, long-term standby, other MFTP0 firmware builds, other television models, and persistent Mac companion auto-start.
+
+## 2026-10-23 — MiTV-MFTP0 standby-wake mode started
+
+- The user explicitly authorized making remote-control standby wake enter GuiZang while retaining a rollback path.
+- Captured the live baseline before writes: `MiTV-MFTP0` / `23.2.10.6129`, `boot_count=72`, `boot_auto_play=0`, visible `start_3rd_app` empty, stock Xiaomi Home foreground, and the existing app preference `enabled=true`, `attempted=72`.
+- Historical event logs still contain Xiaomi `BootActivity` starting the isolated package's `BootGateActivity` on the prior standby wake. The old same-boot guard then exited, confirming that this firmware supplies a usable wake hook without a persistent service.
+- Started an MFTP0-only three-mode policy: Off, full reboot only, and full reboot plus standby wake. Existing enabled installs migrate to full reboot only; wake attempts are persisted and debounced for 30 seconds. No permission, default-Home, Xiaomi-package, Root, accessibility, overlay, Codex or wallpaper change was added.
+- Local verification is pending because this Mac currently has neither Gradle nor a Java/Android SDK toolchain. CI build/test/lint, same-signature installation, remote standby/wake, Home-key behavior and rollback checks must pass before this task is marked complete.

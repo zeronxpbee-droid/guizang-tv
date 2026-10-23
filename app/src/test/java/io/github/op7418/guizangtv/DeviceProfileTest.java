@@ -14,6 +14,7 @@ public class DeviceProfileTest {
         }, DeviceProfile.defaultItems(DeviceProfile.MODEL_MFTP0));
         assertTrue(DeviceProfile.usesMediaExplorerGallery(DeviceProfile.MODEL_MFTP0));
         assertTrue(DeviceProfile.supportsVerifiedXiaomiControls(DeviceProfile.MODEL_MFTP0));
+        assertTrue(DeviceProfile.supportsStandbyWake(DeviceProfile.MODEL_MFTP0));
         assertEquals(3, DeviceProfile.maxHdmiPort(DeviceProfile.MODEL_MFTP0));
         assertEquals(23, DeviceProfile.hdmiInput(DeviceProfile.MODEL_MFTP0, 1));
         assertEquals(25, DeviceProfile.hdmiInput(DeviceProfile.MODEL_MFTP0, 3));
@@ -28,6 +29,7 @@ public class DeviceProfileTest {
                 DeviceProfile.LEGACY_GALLERY, DeviceProfile.STOCK_HOME
         }, DeviceProfile.defaultItems(DeviceProfile.MODEL_MTSU0));
         assertTrue(DeviceProfile.supportsVerifiedXiaomiControls(DeviceProfile.MODEL_MTSU0));
+        assertFalse(DeviceProfile.supportsStandbyWake(DeviceProfile.MODEL_MTSU0));
         assertEquals(2, DeviceProfile.maxHdmiPort(DeviceProfile.MODEL_MTSU0));
         assertFalse(DeviceProfile.usesMediaExplorerGallery(DeviceProfile.MODEL_MTSU0));
         assertFalse(DeviceProfile.usesPackagedInputPopup(DeviceProfile.MODEL_MTSU0));
@@ -35,6 +37,7 @@ public class DeviceProfileTest {
 
     @Test public void unknownModelsDoNotGainXiaomiCapabilities() {
         assertFalse(DeviceProfile.supportsVerifiedXiaomiControls("unknown"));
+        assertFalse(DeviceProfile.supportsStandbyWake("unknown"));
         assertEquals(0, DeviceProfile.maxHdmiPort("unknown"));
         assertEquals(-1, DeviceProfile.hdmiInput("unknown", 1));
         assertNull(DeviceProfile.stockHomeActivity("unknown"));

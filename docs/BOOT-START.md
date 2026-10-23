@@ -2,7 +2,12 @@
 
 v0.2.0 新增。**默认关闭，需要应用内开关和一次电脑配置同时完成**，不是安装后自动接管电视。
 
-目前仅适配 **MiTV-MTSU0**，实机验证固件为 **OS3.0.119.0.UTSMATV / Android 14**。其他型号在应用内不可启用；同型号的其他固件也需要单独验证。
+目前适配并实机验证两组配置：
+
+- **MiTV-MTSU0**：`OS3.0.119.0.UTSMATV / Android 14`。
+- **MiTV-MFTP0**：`23.2.10.6129 / Android 9`，使用本分支独立包 `io.github.zeronxpbee.guizangtv.mftp0`。
+
+其他型号在应用内不可启用；同型号的其他固件也需要单独验证。
 
 ## 它如何工作？
 
@@ -51,7 +56,8 @@ adb -s TV_IP:PORT shell settings put system start_3rd_app io.github.op7418.guiza
 adb -s TV_IP:PORT shell settings get system start_3rd_app
 ```
 
-第二条命令应返回 `io.github.op7418.guizangtv`。
+第二条命令应返回 `io.github.op7418.guizangtv`。MFTP0 兼容分支应改用实际安装的独立包名
+`io.github.zeronxpbee.guizangtv.mftp0`，不能照抄公开包名。
 
 ### 4. 开启应用内开关
 
@@ -68,6 +74,7 @@ adb -s TV_IP:PORT shell reboot
 ```
 
 等待开机画面结束，观察是否进入归藏电视。普通遥控器关屏后再打开可能只是待机唤醒，不能替代这项验证。
+本功能故意只在每个完整启动编号尝试一次；待机唤醒不会再次拉起桌面，也不会持续抢占小米 Home。
 
 已测固件在完整重启后会关闭网络调试端口，需要在电视设置中重新开启才能读取日志。**自动进入本身不依赖 ADB 或电脑保持在线。**
 
@@ -119,3 +126,13 @@ adb -s TV_IP:PORT shell "settings put system start_3rd_app ''"
 公开 v0.2.0 移植该实现并增加未适配机型保护，验证方式见[发布记录](changes/2026-10-21-boot-start.md)。**公开签名 APK 尚未重新执行完整重启测试，私人版实测不等于所有公开版本和机型都已验证。**
 
 未完成实际待机睡眠/唤醒、冷启动时 CEC 竞态、长期待机及其他固件的回归。系统在开机早期启动后再次抢占画面时，本应用不会反复拉回自己。该设置是小米固件内部实现，后续系统更新可能改变它。
+
+### MiTV-MFTP0 验证（2026-10-22 至 2026-10-23）
+
+- 完整重启令 `boot_count` 从 71 增加到 72。系统日志确认依次创建 `BootGateActivity` 和
+  `FrameHomeActivity`，应用记录 `attempted=72`、`enabled=true`、`status=已在本次开机后进入桌面`。
+- 后续一次遥控器关机/开机没有增加 `boot_count`。系统再次调用启动入口时，判断入口按“同次启动已尝试”
+  直接结束，画面保持小米原桌面。这是安全设计，不代表完整重启失败。
+- 该固件在成功处理后把可见的 `start_3rd_app` 清回空字符串，但仍可能缓存包启动目标。因此不要删除
+  判断入口或把同次启动保护去掉；需要停用时先在应用内关闭开关。
+- Home 键、原系统桌面与小米系统包均保留；没有使用悬浮窗、无障碍服务或修改默认 Home。

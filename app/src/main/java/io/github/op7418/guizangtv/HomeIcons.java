@@ -12,7 +12,8 @@ final class HomeIcons {
             case "hdmi:1":resource=R.drawable.mark_appletv;break;
             case "com.xiaodianshi.tv.yst":resource=R.drawable.mark_bilibili;break;
             case "com.xiaomi.mitv.smartshare":resource=R.drawable.mark_broadcast;break;
-            case "com.mitv.gallery":resource=R.drawable.mark_image;break;
+            case "com.mitv.gallery":
+            case "com.xiaomi.mitv.mediaexplorer":resource=R.drawable.mark_image;break;
             case "com.mitv.tvhome":resource=R.drawable.mark_house;break;
             case "control:assistant":resource=R.drawable.mark_chat_circle_dots;break;
             case "control:settings":resource=R.drawable.mark_gear_six;break;

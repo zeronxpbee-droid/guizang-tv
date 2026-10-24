@@ -8,17 +8,25 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 
-/** Local profile verified on MiTV-MTSU0, OS3.0.119.0.UTSMATV. */
+/** Firmware-specific controls gated by real-device profiles. */
 final class XiaomiControls {
+    private static final String MEDIA_EXPLORER_ACTION =
+            "duokan.mediaexplorer.intent.action.BROWSE_ALBUM";
+
     private XiaomiControls() { }
 
     static boolean enabled() {
-        return "MiTV-MTSU0".equals(Build.MODEL);
+        return DeviceProfile.supportsVerifiedXiaomiControls(Build.MODEL);
     }
 
-    /** Observed on this firmware: source 23 = HDMI 1, source 24 = HDMI 2. */
+    static boolean standbyWakeSupported() {
+        return DeviceProfile.supportsStandbyWake(Build.MODEL);
+    }
+
+    /** Verified profiles use source 23/24/25 for HDMI 1/2/3 as available. */
     static boolean openHdmi(Context context, int port) {
-        if (!enabled() || port < 1 || port > 2) return false;
+        int input = DeviceProfile.hdmiInput(Build.MODEL, port);
+        if (input < 0) return false;
         ComponentName target = new ComponentName("com.xiaomi.mitv.tvplayer",
                 "com.xiaomi.mitv.tvplayer.ExternalSourceActivity");
         try {
@@ -28,7 +36,7 @@ final class XiaomiControls {
                     && context.checkSelfPermission(info.permission) != PackageManager.PERMISSION_GRANTED)
                 return false;
             context.startActivity(new Intent("com.xiaomi.mitv.tvplayer.EXTSRC_PLAY")
-                    .setComponent(target).putExtra("input", 22 + port)
+                    .setComponent(target).putExtra("input", input)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             return true;
         } catch (PackageManager.NameNotFoundException | RuntimeException unavailable) {
@@ -62,8 +70,13 @@ final class XiaomiControls {
             if (info.permission != null
                     && context.checkSelfPermission(info.permission) != PackageManager.PERMISSION_GRANTED)
                 return false;
-            context.sendBroadcast(new Intent("com.xiaomi.mitv.settings.INPUTSOURCE_POPUP")
-                    .setComponent(receiver));
+            Intent popup = new Intent("com.xiaomi.mitv.settings.INPUTSOURCE_POPUP");
+            if (DeviceProfile.usesPackagedInputPopup(Build.MODEL)) {
+                popup.setPackage("com.xiaomi.mitv.settings");
+            } else {
+                popup.setComponent(receiver);
+            }
+            context.sendBroadcast(popup);
             return true;
         } catch (PackageManager.NameNotFoundException | SecurityException unavailable) {
             return false;
@@ -71,32 +84,47 @@ final class XiaomiControls {
     }
 
     static String label(String pkg, String original) {
-        if (!enabled()) return original;
-        switch (pkg) {
-            case "com.xiaodianshi.tv.yst": return "哔哩哔哩";
-            case "com.xiaomi.mitv.smartshare": return "小米投屏";
-            case "com.mitv.gallery": return "相册";
-            case "com.mitv.tvhome": return "小米原桌面";
-            default: return original;
-        }
+        return DeviceProfile.label(Build.MODEL, pkg, original);
     }
 
-    static boolean startStockHome(Context context, ComponentName component) {
-        if (!enabled() || !"com.mitv.tvhome".equals(component.getPackageName())) return false;
-        // The public MAIN alias is exported without HOME_STATE. The directly enumerated
-        // MainActivityUserMode target requires Xiaomi's signature permission on this firmware.
-        ComponentName alias = new ComponentName("com.mitv.tvhome", "com.mitv.tvhome.MainActivity");
+    static boolean isDirectEntry(String id) {
+        return DeviceProfile.STOCK_HOME.equals(id)
+                || (DeviceProfile.usesMediaExplorerGallery(Build.MODEL)
+                && DeviceProfile.MEDIA_EXPLORER.equals(id));
+    }
+
+    static boolean openGallery(Context context, String id) {
+        if (!DeviceProfile.usesMediaExplorerGallery(Build.MODEL)
+                || !DeviceProfile.MEDIA_EXPLORER.equals(id)) return false;
+        Intent candidate = new Intent(MEDIA_EXPLORER_ACTION)
+                .addCategory(Intent.CATEGORY_DEFAULT)
+                .setPackage(DeviceProfile.MEDIA_EXPLORER);
+        ComponentName target = candidate.resolveActivity(context.getPackageManager());
+        if (target == null) return false;
+        return startChecked(context, candidate.setComponent(target), target, "Album entry unavailable");
+    }
+
+    static boolean startStockHome(Context context) {
+        String className = DeviceProfile.stockHomeActivity(Build.MODEL);
+        if (className == null) return false;
+        ComponentName target = new ComponentName(DeviceProfile.STOCK_HOME, className);
+        Intent intent = new Intent(Intent.ACTION_MAIN).setComponent(target)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        return startChecked(context, intent, target, "Public Xiaomi Home entry unavailable");
+    }
+
+    private static boolean startChecked(Context context, Intent intent, ComponentName target,
+            String logMessage) {
         try {
-            ActivityInfo info = context.getPackageManager().getActivityInfo(alias, 0);
+            ActivityInfo info = context.getPackageManager().getActivityInfo(target, 0);
             if (!info.enabled || !info.exported) return false;
             if (info.permission != null
                     && context.checkSelfPermission(info.permission) != PackageManager.PERMISSION_GRANTED)
                 return false;
-            context.startActivity(new Intent(Intent.ACTION_MAIN).setComponent(alias)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+            context.startActivity(intent);
             return true;
         } catch (PackageManager.NameNotFoundException | RuntimeException unavailable) {
-            android.util.Log.w("TvHome.Xiaomi", "Public Xiaomi Home entry unavailable", unavailable);
+            android.util.Log.w("TvHome.Xiaomi", logMessage, unavailable);
             return false;
         }
     }

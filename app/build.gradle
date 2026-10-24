@@ -4,11 +4,11 @@ android {
     namespace 'io.github.op7418.guizangtv'
     compileSdk 34
     defaultConfig {
-        applicationId 'io.github.op7418.guizangtv'
+        applicationId 'io.github.zeronxpbee.guizangtv.mftp0'
         minSdk 26
         targetSdk 34
-        versionCode 6
-        versionName '0.4.0-dev'
+        versionCode 7
+        versionName '0.4.0-mftp0-wake-dev'
     }
     signingConfigs {
         release {

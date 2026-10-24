@@ -36,6 +36,33 @@
 - v0.3.0 默认入口为 6 项，可在设置中编辑为 1–9 项。名称与端口映射仍需修改源码。
 - 壁纸仅支持预先打包，最多 15 张；不支持联网图库或电视端新增照片。
 
+## MiTV-MFTP0 适配边界（2026-10-22）
+
+本分支基于原仓库 `main` 的 `312c01119a327f402e68818670a6542f1e643e56`，针对一台
+`MiTV-MFTP0`（设备代号 `alita`、Android 9 / API 28、固件 `23.2.10.6129`）建立独立配置。
+只读 ADB 检查确认系统相册包为 `com.xiaomi.mitv.mediaexplorer`，其相册 action 为
+`duokan.mediaexplorer.intent.action.BROWSE_ALBUM`，当前解析到
+`com.xiaomi.mitv.mediaexplorer.NewScraperMainEntryActivity`。适配代码仍会在运行时检查目标组件已启用、
+已导出且没有未满足权限，不把只读检查得到的 Activity 名称硬编码为无条件启动目标。
+
+该配置使用独立 application ID `io.github.zeronxpbee.guizangtv.mftp0`，可与原项目包并存，避免因签名
+不同而要求卸载并丢失偏好。默认入口保留哔哩哔哩、小米投屏、实际相册和小米原桌面；相册没有标准
+Launcher 入口，因此通过已确认 action 打开。小米原桌面只使用该机当前 HOME 组件，并在启动前做组件
+和权限检查，不修改默认 Home 设置。
+
+最终兼容包已在该设备安装和实测。HDMI 1/2/3 分别建立 `HW5/HW6/HW7` 会话；系统信号源面板实际显示
+HDMI 1/2/3、TV、AV 和 DTMB。HDMI 4 只出现在底层硬件枚举中，调用对应参数没有建立会话，因此不暴露。
+小米投屏、Media Explorer 相册和公开小米桌面别名均从适配应用成功打开。Home 键仍回到
+`com.mitv.tvhome/.MainActivityUserMode`，没有改变默认 Home 或禁用系统包。
+
+Codex 保持默认关闭，经用户从实验设置开启后，电视完成本地 HTTPS 配对并显示两轮文字问答。配对证书、
+令牌和私钥仅位于仓库外的私有目录；电脑连接服务不是常驻系统服务，使用 Codex 时必须在同一局域网的
+电脑上运行。开机自动进入也保持默认关闭；本机启用后完成一次完整重启验证，详见
+[开机自动进入](BOOT-START.md)。
+
+以上结果只证明 `MiTV-MFTP0` / `23.2.10.6129` 与本分支 Debug 签名包。HDMI 1 检测到 Fire TV Stick，
+但未对每个端口的音频、视频质量和延迟做完整验收；长期待机、其他固件和其他电视型号仍未验证。
+
 ## 开机自动进入的新增验证（2026-10-21）
 
 在同一配置的私人同源实现上，系统 start_3rd_app 调用一次性入口后成功进入桌面，现场观察与日志一致。Home 仍返回原桌面，重复调用不抢占原桌面或 Apple TV HDMI；关闭、开启开关均通过。没有授予悬浮窗权限，没有禁用系统应用。

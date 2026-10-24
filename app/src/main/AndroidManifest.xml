@@ -7,6 +7,7 @@
         <intent><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LEANBACK_LAUNCHER" /></intent>
         <package android:name="com.xiaomi.mitv.settings" />
         <package android:name="com.xiaomi.mitv.tvplayer" />
+        <package android:name="com.xiaomi.mitv.mediaexplorer" />
         <package android:name="com.mitv.tvhome" />
     </queries>
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher"

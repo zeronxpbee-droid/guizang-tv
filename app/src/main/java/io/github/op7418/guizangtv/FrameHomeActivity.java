@@ -67,6 +67,7 @@ public final class FrameHomeActivity extends Activity implements HomeSurface.Act
     @Override public void open(String id){
         if(id.startsWith("hdmi:")){if(!XiaomiControls.openHdmi(this,Integer.parseInt(id.substring(5))))message("暂时无法切换信号源");return;}
         if("com.mitv.tvhome".equals(id)){stockHome();return;}
+        if(DeviceProfile.MEDIA_EXPLORER.equals(id)){if(!XiaomiControls.openGallery(this,id))message("相册暂时不可用");return;}
         Intent intent=getPackageManager().getLeanbackLaunchIntentForPackage(id);
         if(intent==null)intent=getPackageManager().getLaunchIntentForPackage(id);
         launch(intent,"应用暂时不可用");
@@ -77,11 +78,11 @@ public final class FrameHomeActivity extends Activity implements HomeSurface.Act
         else if(index==2)settings.show();
         else if(index==3&&HomeAssistant.enabled(this))assistant.show();
     }
-    void stockHome(){if(!XiaomiControls.startStockHome(this,new ComponentName("com.mitv.tvhome","com.mitv.tvhome.MainActivity")))message("暂时无法打开小米原桌面");}
+    void stockHome(){if(!XiaomiControls.startStockHome(this))message("暂时无法打开小米原桌面");}
     void systemSettings(){Intent i=XiaomiControls.settings(this,Settings.ACTION_SETTINGS);if(i==null)i=new Intent(Settings.ACTION_SETTINGS);launch(i,"暂时无法打开设置");}
     private void launch(Intent i,String error){if(i==null){message(error);return;}try{startActivity(i);}catch(RuntimeException unavailable){message(error);}}
     private void showLibrary(){
-        items.discover();List<String> ids=new ArrayList<>(items.names.keySet());ids.removeIf(id->id.startsWith("hdmi:") || (getPackageManager().getLeanbackLaunchIntentForPackage(id)==null && getPackageManager().getLaunchIntentForPackage(id)==null));
+        items.discover();List<String> ids=new ArrayList<>(items.names.keySet());ids.removeIf(id->id.startsWith("hdmi:") || (!XiaomiControls.isDirectEntry(id) && getPackageManager().getLeanbackLaunchIntentForPackage(id)==null && getPackageManager().getLaunchIntentForPackage(id)==null));
         Collator collator=Collator.getInstance(Locale.CHINA);ids.sort((a,b)->collator.compare(items.name(a),items.name(b)));
         String[] labels=new String[ids.size()];for(int i=0;i<labels.length;i++)labels[i]=items.name(ids.get(i));
         library=new AlertDialog.Builder(this).setTitle("全部应用").setItems(labels,(d,i)->open(ids.get(i))).setNegativeButton("返回",null).create();
